@@ -1,0 +1,75 @@
+diff --git a/apps/frontend/src/components/launches/add.provider.component.tsx b/apps/frontend/src/components/launches/add.provider.component.tsx
+index 9ff651ac..326c2b23 100644
+--- a/apps/frontend/src/components/launches/add.provider.component.tsx
++++ b/apps/frontend/src/components/launches/add.provider.component.tsx
+@@ -4,6 +4,7 @@
+ import React, { FC, useCallback, useMemo } from 'react';
+ import { useFetch } from '@gitroom/helpers/utils/custom.fetch';
+ import { Input } from '@gitroom/react/form/input';
++import { Select } from '@gitroom/react/form/select';
+ import { FieldValues, FormProvider, useForm } from 'react-hook-form';
+@@ -164,7 +165,8 @@
+     defaultValue?: string;
+     validation: string;
+-    type: 'text' | 'password';
++    type: 'text' | 'password' | 'select';
++    options?: Array<{ value: string; label: string }>;
+     hint?: string;
+@@ -237,7 +239,15 @@
+-              {variable.hint ? (
++              {variable.type === 'select' ? (
++                <Select label={variable.label} name={variable.key}>
++                  {(variable.options || []).map((option) => (
++                    <option key={option.value} value={option.value}>
++                      {option.label}
++                    </option>
++                  ))}
++                </Select>
++              ) : variable.hint ? (
+                 <div className="flex flex-col gap-[6px]">
+@@ -392,7 +402,8 @@
+       label: string;
+       validation: string;
+-      type: 'text' | 'password';
++      type: 'text' | 'password' | 'select';
++      options?: Array<{ value: string; label: string }>;
+       hint?: string;
+@@ -423,7 +434,8 @@
+           defaultValue?: string;
+-          type: 'text' | 'password';
++          type: 'text' | 'password' | 'select';
++          options?: Array<{ value: string; label: string }>;
+           hint?: string;
+diff --git a/libraries/nestjs-libraries/src/dtos/posts/providers-settings/all.providers.settings.ts b/libraries/nestjs-libraries/src/dtos/posts/providers-settings/all.providers.settings.ts
+index 5b651158..0a46eb76 100644
+--- a/libraries/nestjs-libraries/src/dtos/posts/providers-settings/all.providers.settings.ts
++++ b/libraries/nestjs-libraries/src/dtos/posts/providers-settings/all.providers.settings.ts
+@@ -91,6 +91,7 @@
+     { value: FacebookDto, name: 'facebook' },
+     { value: setEmpty, name: 'threads' },
++    { value: setEmpty, name: 'postforme' },
+     { value: setEmpty, name: 'mastodon' },
+diff --git a/libraries/nestjs-libraries/src/integrations/integration.manager.ts b/libraries/nestjs-libraries/src/integrations/integration.manager.ts
+index 9229e019..fa42d55e 100644
+--- a/libraries/nestjs-libraries/src/integrations/integration.manager.ts
++++ b/libraries/nestjs-libraries/src/integrations/integration.manager.ts
+@@ -24,6 +24,7 @@
+ import { TelegramProvider } from '@gitroom/nestjs-libraries/integrations/social/telegram.provider';
++import { PostForMeProvider } from '@gitroom/nestjs-libraries/integrations/social/postforme.provider';
+ import { NostrProvider } from '@gitroom/nestjs-libraries/integrations/social/nostr.provider';
+@@ -40,6 +41,7 @@
+ export const socialIntegrationList: Array<SocialAbstract & SocialProvider> = [
+   new XProvider(),
++  new PostForMeProvider(),
+   new LinkedinProvider(),
+diff --git a/libraries/nestjs-libraries/src/integrations/social/social.integrations.interface.ts b/libraries/nestjs-libraries/src/integrations/social/social.integrations.interface.ts
+index 5a4d0b40..be8092ee 100644
+--- a/libraries/nestjs-libraries/src/integrations/social/social.integrations.interface.ts
++++ b/libraries/nestjs-libraries/src/integrations/social/social.integrations.interface.ts
+@@ -194,7 +194,8 @@
+       defaultValue?: string;
+       validation: string;
+-      type: 'text' | 'password';
++      type: 'text' | 'password' | 'select';
++      options?: { value: string; label: string }[];
+       hint?: string;
