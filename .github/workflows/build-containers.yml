@@ -28,7 +28,34 @@ jobs:
           git checkout 1e4c8dd5c4f70c4d0abd01e23cc42d5b533d1ab9
           curl -fsSL https://raw.githubusercontent.com/erykkruk/postiz-app/ccf70a52ccafb3513b97473a0f2cfdbb09a625b5/libraries/nestjs-libraries/src/integrations/social/postforme.provider.ts -o libraries/nestjs-libraries/src/integrations/social/postforme.provider.ts
           curl -fsSL https://raw.githubusercontent.com/erykkruk/postiz-app/ccf70a52ccafb3513b97473a0f2cfdbb09a625b5/apps/frontend/public/icons/platforms/postforme.png -o apps/frontend/public/icons/platforms/postforme.png
-          git apply ../postforme.patch
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          p=Path('apps/frontend/src/components/launches/add.provider.component.tsx')
+          s=p.read_text()
+          s=s.replace("import { Input } from '@gitroom/react/form/input';", "import { Input } from '@gitroom/react/form/input';\nimport { Select } from '@gitroom/react/form/select';")
+          s=re.sub(r"(\s+)type: 'text' \| 'password';", r"\1type: 'text' | 'password' | 'select';\1options?: Array<{ value: string; label: string }>;", s)
+          s=s.replace("{variable.hint ? (", """{variable.type === 'select' ? (
+                <Select label={variable.label} name={variable.key}>
+                  {(variable.options || []).map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </Select>
+              ) : variable.hint ? (""", 1)
+          p.write_text(s)
+          p=Path('libraries/nestjs-libraries/src/integrations/social/social.integrations.interface.ts')
+          s=p.read_text().replace("type: 'text' | 'password';", "type: 'text' | 'password' | 'select';\n      options?: { value: string; label: string }[];", 1)
+          p.write_text(s)
+          p=Path('libraries/nestjs-libraries/src/integrations/integration.manager.ts')
+          s=p.read_text().replace("import { TelegramProvider } from '@gitroom/nestjs-libraries/integrations/social/telegram.provider';", "import { TelegramProvider } from '@gitroom/nestjs-libraries/integrations/social/telegram.provider';\nimport { PostForMeProvider } from '@gitroom/nestjs-libraries/integrations/social/postforme.provider';").replace("  new XProvider(),", "  new XProvider(),\n  new PostForMeProvider(),", 1)
+          p.write_text(s)
+          p=Path('libraries/nestjs-libraries/src/dtos/posts/providers-settings/all.providers.settings.ts')
+          s=p.read_text().replace("    { value: setEmpty, name: 'threads' },", "    { value: setEmpty, name: 'threads' },\n    { value: setEmpty, name: 'postforme' },", 1)
+          p.write_text(s)
+          PY
+          git diff --check
       - uses: docker/setup-buildx-action@v3
       - uses: docker/login-action@v3
         with:
@@ -38,7 +65,7 @@ jobs:
       - name: Build and push
         working-directory: candidate
         run: |
-          docker buildx build --platform linux/${{ matrix.arch }} -f Dockerfile.dev             -t ${IMAGE}:${TAG}-${{ matrix.arch }}             --build-arg NEXT_PUBLIC_VERSION=${TAG}             --pull --no-cache --provenance=false --sbom=false             --output type=registry .
+          docker buildx build --platform linux/${{ matrix.arch }} -f Dockerfile.dev -t ${IMAGE}:${TAG}-${{ matrix.arch }} --build-arg NEXT_PUBLIC_VERSION=${TAG} --pull --no-cache --provenance=false --sbom=false --output type=registry .
   manifest:
     needs: build
     runs-on: ubuntu-latest
@@ -49,7 +76,5 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ github.token }}
       - uses: docker/setup-buildx-action@v3
-      - name: Publish immutable manifest
-        run: |
-          docker buildx imagetools create             -t ${IMAGE}:${TAG}             ${IMAGE}:${TAG}-amd64             ${IMAGE}:${TAG}-arm64
-          docker buildx imagetools inspect ${IMAGE}:${TAG}
+      - run: docker buildx imagetools create -t ${IMAGE}:${TAG} ${IMAGE}:${TAG}-amd64 ${IMAGE}:${TAG}-arm64
+      - run: docker buildx imagetools inspect ${IMAGE}:${TAG}
