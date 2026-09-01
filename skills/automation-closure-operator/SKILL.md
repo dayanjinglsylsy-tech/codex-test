@@ -1,187 +1,253 @@
 ---
 name: automation-closure-operator
-description: Finish or repair an existing automation without repeated rework. Use whenever Codex is asked to build, repair, activate, finish, close, or productionize an automation/workflow/integration under a limited work window, especially after repeated debugging cycles. Enforces Current-Reality-first, Upstream-First source pinning, reuse-before-build, read-only preflight, minimal real E2E, A/B/C/D blocker classification, double-run idempotency regression, quota protection, and short natural-language Founder handoff. Applies to n8n, APIs, webhooks, agents, scrapers, messaging, data pipelines, scheduled jobs, and similar automation work.
+description: Thin completion-contract wrapper for existing automations. Use only when the user asks to finish, repair, close, productionize, or make an existing automation fully repeatable under a bounded work window. This skill does NOT replace Superpowers or the current software's official skills. It adds only three user-level guarantees that upstream technical skills do not own: full-scope reconciliation, no partial-completion masquerading as done, and truthful feasibility/completion reporting.
 ---
 
 # Automation Closure Operator
 
-Treat the job as a closure run, not an exploration run.
+This is a THIN wrapper, not a debugging framework and not a substitute for upstream skills.
 
-The objective is not “improve the system.” The objective is to reach a repeatable CORE DONE state with real readback and no known local rework tail.
+Always use, in this order:
+1. Current company Authority / Reality.
+2. Superpowers for root-cause debugging, TDD where applicable, and verification-before-completion.
+3. The current software's official Skill / README / docs / source.
+4. This skill only to enforce the user's completion contract across the whole requested scope.
 
-## 1. Lock the outcome before touching anything
+If this skill conflicts with Superpowers or an official software skill on technical implementation, the upstream technical skill wins. This skill only owns scope, completion semantics, and bounded-work discipline.
 
-Restate the task in one short natural-language sentence:
+## 0. Never promise certainty you cannot prove
 
-`现有系统要从什么真实输入，稳定走到什么真实结果。`
+Before mutation, give a feasibility verdict for the USER'S FULL REQUEST, not for a convenient subset.
 
-Freeze scope. Do not add adjacent goals during the run.
+Allowed verdicts:
+- `FULL COMPLETION GUARANTEED BY CURRENT EVIDENCE` — use only when every required dependency is already available, every required credential/auth/physical gate is known satisfied, and the remaining work is deterministic and locally controllable.
+- `FULL COMPLETION NOT GUARANTEED YET` — required whenever any unknown runtime behavior, external API/platform state, missing credential/auth, human approval, physical dependency, or unverified branch can still block the full outcome.
 
-If a company Current Reality / architecture authority exists, read it first. Preserve existing tree, owners, workflow IDs, databases, senders, consoles, agents, credentials, and Founder gates unless evidence proves a true gap.
+Never translate “high probability” into “guaranteed.”
+Never say “100%” unless current evidence genuinely proves that no unresolved external or unknown dependency can prevent completion.
+
+If the user asks “can this definitely be finished in N hours?” and certainty cannot be proven, answer NO and identify exactly what additional condition, access, or reserve capacity removes the uncertainty. Do not soften this into optimistic percentages.
+
+## 1. Lock the FULL requested outcome before touching anything
+
+Restate the user's requested end state in one sentence:
+
+`现有系统要从什么真实输入，稳定走到哪些真实结果，全部哪些分支都必须成立。`
+
+Then build a SCOPE MANIFEST from current Authority / Reality before mutation.
+
+The manifest must enumerate every in-scope branch that the user asked to be finished. Example categories:
+- triggers / schedules;
+- discovery / search;
+- qualification / scoring;
+- routing;
+- Gmail draft or other output;
+- Telegram/mobile approval controls;
+- WhatsApp or other requested contact rail;
+- dedupe / idempotency;
+- error handling / retries / explicit zero-result state;
+- published/live schedule proof.
+
+No silent scope narrowing.
+No declaring the job done because one path works.
+No replacing “全部” with “core path” unless the user explicitly agrees.
+
+## 2. Preserve the current architecture
+
+Read current Authority / Reality first.
+Preserve existing tree, owners, workflow IDs, databases, senders, consoles, agents, credentials, and Founder gates unless evidence proves a real gap.
 
 Never create a second system merely because the first one is incomplete.
+Never reopen already-proven PASS branches without evidence they regressed.
 
-## 2. Upstream-First is mandatory
+## 3. Upstream-First is mandatory
 
 Before custom code or workflow mutation, identify the exact upstream owner for every node being touched.
 
 Prefer, in order:
-
 1. Official product Skill / README / docs / source code.
 2. Maintainer-owned examples or reference implementations.
 3. Mature open-source project documentation.
 4. Existing local implementation already using that upstream method.
 5. Custom code only for a confirmed true gap.
 
-Do not rely on model memory when an authoritative upstream source exists.
-
-For each proposed change, be able to answer in plain language:
-
+For every proposed change, be able to answer:
 `原厂已经怎么做？现有系统哪里偏离？这一刀只修什么？`
 
 If this cannot be answered, do not mutate yet.
 
-## 3. Read-only Preflight before mutation
+## 4. Read-only preflight before mutation
 
 Inspect the live/published/current state first:
-
 - runtime/service health;
 - active and reserve workflows;
 - published graph/connections;
 - credential references and auth health;
 - webhook/callback registration;
-- existing stores/tables/dedupe state;
-- existing execution/readback evidence;
-- side-effect boundaries.
+- stores/tables/dedupe state;
+- recent execution/readback evidence;
+- side-effect boundaries;
+- every branch in the Scope Manifest.
 
-Preflight must distinguish “service is alive” from “commercial E2E is proven.”
+Preflight must distinguish:
+- installed/configured;
+- service alive;
+- one branch previously passed;
+- FULL requested commercial E2E currently proven.
 
-Do not rebuild capabilities already present.
+These are not interchangeable.
 
-## 4. Classify every blocker before fixing it
+## 5. Use Superpowers for debugging — do not duplicate it here
 
-Every failure must be placed into exactly one class:
+For bugs, unexpected behavior, empty-success runs, broken callbacks, routing defects, or regressions:
+- invoke Superpowers `systematic-debugging`;
+- find root cause before fixes;
+- compare working vs broken evidence;
+- test one hypothesis at a time;
+- use TDD when applicable;
+- use `verification-before-completion` before any success claim.
 
-- **A — local workflow/code/config defect:** Codex may repair it.
-- **B — credential/auth/Founder gate:** preserve working system and surface the one human action.
-- **C — third-party API/rate limit/platform blocker:** preserve working system; do not redesign around a temporary external condition unless an approved upstream fallback already exists.
-- **D — physical/business reality gate:** never “solve” it with code or fabricated state.
+After 3 failed minimal fixes to the same defect, STOP. Do not attempt a fourth guess. Re-open root-cause investigation and, if required by Superpowers, question the architecture with the user.
 
-Only A permits continued repair work.
+This skill must never weaken or bypass those rules.
 
-Do not reopen architecture to solve B/C/D.
+## 6. Classify blockers, but do not call blocked scope DONE
 
-## 5. Repair one evidenced defect at a time
+Classify every blocker:
+- A — local workflow/code/config defect: Codex may repair.
+- B — credential/auth/Founder gate.
+- C — third-party API/rate limit/platform blocker.
+- D — physical/business reality gate.
 
-Before each mutation, state:
+Important completion rule:
+- A/B/C/D are useful for deciding WHAT TO DO NEXT.
+- They do NOT permit a blocked in-scope branch to be called done.
 
-`发现的具体 A 类故障是什么 → 为什么它阻止 CORE DONE → 最小修复是什么。`
+If any requested in-scope branch remains blocked by A, B, C, or D:
+`FULL DONE = NO`.
 
-Prefer native capabilities and existing components over new infrastructure.
+You may separately say which local branches are proven, but never relabel partial/local completion as CORE DONE when the user's request was “全部 / 完整 / 100%”.
 
-A thin state table/store is allowed only when the workflow genuinely needs queryable lifecycle state, idempotency, callback correlation, TTL, or status branching. Do not let it become a second CRM/Lead DB/console.
+## 7. Repair only evidenced defects
 
-No opportunistic refactors, naming cleanups, dashboard work, new agents, or “while we are here” improvements during closure.
+Before each mutation state internally:
+`具体故障是什么 → 为什么阻止某个 Scope Manifest 分支 → 最小修复是什么。`
 
-## 6. First gate: minimal REAL E2E
+Prefer native capabilities and existing components.
+No opportunistic refactors, naming cleanups, dashboards, new agents, second CRM/Lead DB/console, or unrelated expansion during closure.
 
-Do not start with volume.
+## 8. Verification is per branch, then end-to-end
 
-Run the smallest representative real path that proves the pipe:
+A single successful execution is never enough for a full-scope request.
 
-`real input → qualification/logic → downstream side-effect preparation → readback`
+For every Scope Manifest branch, obtain fresh evidence appropriate to that branch, such as:
+- execution ID;
+- message ID;
+- draft ID;
+- callback readback;
+- stored row/state;
+- actual URL;
+- published workflow/version readback;
+- explicit zero-result reason;
+- retry/error-path evidence.
 
-Use real execution IDs, message IDs, draft IDs, callback IDs, rows, files, webhook responses, or equivalent proof for the system being tested.
+Then run the smallest representative REAL E2E that crosses the requested system from true input to true user-visible output.
 
-Saved code, valid syntax, successful publish, or “theoretically works” is not E2E proof.
+Do not trigger irreversible SEND / SUBMIT / PUBLISH unless the user explicitly approved it.
 
-Do not trigger real irreversible SEND / SUBMIT / PUBLISH unless the Founder explicitly approved it.
+## 9. Mandatory second regression for repeatable automations
 
-If the first E2E exposes a local defect, fix that defect and rerun. Do not broaden the investigation.
+For repeatable/scheduled automations, FULL DONE also requires a second controlled run on the same published workflow and fresh readback proving all applicable conditions:
+- no duplicate irreversible/user-visible side effects;
+- dedupe/idempotency correct;
+- no cross-brand/cross-item/callback cross-wire;
+- callbacks not consumed twice;
+- published connections still match intended graph;
+- recoverable failures handled by bounded retry;
+- terminal failures surface explicitly;
+- explicit zero-result states do not masquerade as generic Success;
+- previously PASS branches remain intact.
 
-## 7. Second gate: anti-rework regression
+## 10. If the user requested unattended scheduling, schedule proof is mandatory
 
-A first successful run is not CORE DONE.
+Manual E2E + regression is insufficient when the user's requested outcome is unattended scheduled operation.
 
-Using the same published workflow, perform fresh readback and a second controlled run.
+FULL DONE additionally requires at least one fresh REAL Schedule Trigger / production-trigger execution on the same published version, with downstream readback.
 
-Prove all applicable conditions:
+If the schedule merely wakes but business output is wrong/empty without an explicit valid zero-result terminal state, FULL DONE = NO.
 
-- same input does not duplicate irreversible or user-visible side effects;
-- dedupe/idempotency behaves correctly;
-- callback/message/job correlation does not cross-wire;
-- callbacks are not consumed twice;
-- published connections equal the intended graph after fresh readback;
-- transient recoverable failures are absorbed by bounded retry;
-- normal success stays quiet;
-- real terminal failure reaches the intended error path;
-- existing PASS branches remain unchanged.
+## 11. Full completion matrix is mandatory before the word DONE
 
-Only after `first E2E PASS + second regression PASS + no duplicate side effects` may the run be marked **CORE DONE**.
+Before final handoff, reconcile the Scope Manifest line by line.
 
-## 8. Capacity proof comes after CORE DONE
+Each line must be exactly one of:
+- `PASS — fresh evidence attached`
+- `BLOCKED — exact blocker and class A/B/C/D`
+- `NOT TESTED — therefore not done`
 
-Only after CORE DONE may Codex run a larger real batch or higher-volume test.
+FULL DONE may be YES only if every in-scope line is PASS.
 
-Capacity proof must never outrank correctness.
+There is no percentage-based shortcut.
+There is no “mostly done.”
+There is no “core done” substitute for a user's explicit full-scope request.
 
-If external search, APIs, rate limits, scraping access, or slow upstreams reduce batch size, keep CORE DONE frozen and report the capacity limitation separately. Do not reopen architecture just to hit a count.
-
-## 9. Protect the work-window quota
+## 12. Bounded work-window / quota rule
 
 Use the work window in this order:
+1. Scope Manifest + Current Reality + upstream source pinning.
+2. Read-only preflight.
+3. Root-cause work via Superpowers for the first failing branch.
+4. Minimal repair of evidenced A defects.
+5. Per-branch fresh verification.
+6. Real E2E.
+7. Second regression.
+8. Real schedule-trigger proof if requested.
+9. Only then capacity/volume testing.
 
-1. Current Reality + upstream source pinning.
-2. Read-only Preflight.
-3. Minimal real E2E.
-4. Repair only evidenced A defects.
-5. Second-run idempotency/regression.
-6. Capacity proof only with remaining time.
+If a B/C/D blocker appears, stop burning engineering quota on that blocker and surface the exact human/external action. Preserve already-proven branches.
 
-If more than half the available window is consumed and minimal E2E is still not reached, stop broad research immediately. Identify the single current blocker, classify A/B/C/D, and concentrate only on the shortest path to the E2E gate.
+If the work window ends before every in-scope branch passes, report `FULL DONE = NO`. Never use quota exhaustion as a reason to downgrade the user's requested definition of done.
 
-Never spend the final portion of the quota collecting more candidates, polishing logs, rewriting documentation, or expanding the system while regression remains unproven.
+## 13. Founder communication stays short and literal
 
-## 10. Founder communication must stay natural-language short
+Do not send giant logs unless requested.
+Final handoff for a full-scope request must answer only:
+- FULL DONE = YES / NO;
+- Scope Manifest branches that PASS;
+- any branch not PASS;
+- exact evidence IDs for each PASS branch;
+- exact blocker class/action for each non-PASS branch;
+- whether a real scheduled production trigger passed when required;
+- whether any unresolved A-class defect remains;
+- the single Founder action, if any.
 
-Do not send raw logs, code stacks, giant audit tables, long prompts, or internal implementation narration unless explicitly requested.
+## FULL DONE definition
 
-During work, report only when something materially changes the next action:
+When the user asked for all / complete / 100% / fully unattended operation:
 
-`现在是什么 → 真正问题是什么 → 下一步做什么。`
+FULL DONE = YES only when ALL applicable requested branches have fresh evidence and all required repeatability/schedule gates pass.
 
-Final handoff must answer only:
-
-- 现在真正跑通了什么；
-- CORE DONE 是否经过双跑；
-- 真实产出了什么；
-- 是否还有阻止反复运行的问题；
-- 若有，它属于 A/B/C/D 哪类；
-- Founder 现在唯一需要做什么。
-
-## CORE DONE definition
-
-CORE DONE requires all applicable evidence below:
-
+Required when applicable:
 - live/current/published graph readback;
-- representative real execution evidence;
+- all Scope Manifest branches PASS;
+- representative real E2E PASS;
 - real downstream readback;
-- first E2E PASS;
 - second controlled regression PASS;
 - no duplicate side effects;
-- correct failure boundary;
-- no unresolved A-class defect known to block repeat operation.
+- correct explicit zero-result/error boundary;
+- no unresolved A/B/C/D blocker on any requested in-scope branch;
+- real production Schedule Trigger PASS for unattended scheduled workflows.
 
-B/C/D blockers may remain OPEN without invalidating already-proven local CORE DONE, but they must be stated truthfully and must not be disguised as code work.
+Anything less is FULL DONE = NO.
 
-## STOP conditions
+## Delete-this-skill test
 
-Stop and do not widen scope when:
+This skill should remain only because it adds a thin user-level completion contract not owned by Superpowers or product-specific official skills.
 
-- the requested outcome is already proven;
-- the remaining blocker is B, C, or D;
-- a proposed new system duplicates an existing owner;
-- an upstream source already provides the needed capability;
-- the next action would consume quota without improving CORE DONE evidence.
+If future upstream skills natively provide all of the following together:
+1. full user-scope manifest/reconciliation;
+2. explicit prohibition on partial completion masquerading as full completion;
+3. truthful guaranteed-vs-not-guaranteed feasibility semantics for bounded work windows;
+4. mandatory per-branch + E2E + repeatability + schedule completion matrix;
 
-The closure run is successful when the Founder can use the automation again without returning to repair the same local defect class.
+then this file has no unique job and SHOULD BE DELETED rather than duplicated.
