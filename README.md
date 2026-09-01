@@ -1,11 +1,5 @@
-# Codex Skills
+# Codex Test
 
-Small repository for user-specific Codex/Agent Skills.
+No custom user-built Agent Skill is currently authoritative in this repository.
 
-Current skill:
-- `skills/automation-closure-operator/` — thin completion-contract wrapper for existing automations.
-
-Rules:
-- product-specific official skills/docs and Superpowers remain upstream technical authority;
-- keep `SKILL.md` thin and use `references/` for on-demand detail;
-- do not turn this repository into a second workflow engine, company memory, or documentation archive.
+Use mature upstream/official Skills and documentation directly. Do not recreate `automation-closure-operator` or another wrapper unless the Founder explicitly reopens that decision.
